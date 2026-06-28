@@ -1,0 +1,25 @@
+{
+  "items": [
+    {
+      "id": "activity-001",
+      "title": "Application shell initialized",
+      "description": "The bulletproof-nextjs reference workspace is ready for product-specific features.",
+      "occurredAt": "2026-06-25T08:00:00.000Z",
+      "status": "success"
+    },
+    {
+      "id": "activity-002",
+      "title": "Verification baseline configured",
+      "description": "TypeScript, Biome, Vitest, MSW, and Playwright are available.",
+      "occurredAt": "2026-06-25T08:05:00.000Z",
+      "status": "info"
+    },
+    {
+      "id": "activity-003",
+      "title": "Backend integration pending",
+      "description": "This fixture is local demo data; no backend or persistence is configured.",
+      "occurredAt": "2026-06-25T08:10:00.000Z",
+      "status": "warning"
+    }
+  ]
+}

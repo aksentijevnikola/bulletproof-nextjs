@@ -1,0 +1,10 @@
+{
+  "project": "baseframe",
+  "facts": [
+    "The repository is one standalone Next.js App Router application at the root.",
+    "Bun is the package manager and bun.lock is required.",
+    "Architecture rules are documented in docs/architecture.md.",
+    "The project intentionally has no backend, auth provider, persistence, PWA, or monorepo.",
+    "The primary verification command is bun run verify; UI work also runs bun run e2e."
+  ]
+}

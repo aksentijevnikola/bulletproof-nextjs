@@ -1,0 +1,48 @@
+version: 2
+updates:
+  - package-ecosystem: bun
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Europe/Skopje
+    open-pull-requests-limit: 6
+    groups:
+      next-and-react:
+        patterns:
+          - next
+          - react
+          - react-dom
+          - "@types/react"
+          - "@types/react-dom"
+      tanstack-query:
+        patterns:
+          - "@tanstack/react-query"
+          - "@tanstack/react-query-devtools"
+      testing:
+        patterns:
+          - vitest
+          - "@vitest/*"
+          - "@testing-library/*"
+          - msw
+          - "@playwright/test"
+          - "@axe-core/playwright"
+      tooling:
+        patterns:
+          - "*"
+        exclude-patterns:
+          - "@types/react"
+          - "@types/react-dom"
+          - "@testing-library/*"
+          - "@vitest/*"
+          - "@playwright/test"
+          - "@axe-core/playwright"
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: tuesday
+      time: "06:00"
+      timezone: Europe/Skopje
+    open-pull-requests-limit: 4
