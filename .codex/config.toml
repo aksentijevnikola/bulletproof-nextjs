@@ -1,3 +1,0 @@
-project_doc_max_bytes = 32768
-project_doc_fallback_filenames = ["README.md"]
-project_root_markers = [".git", "package.json"]

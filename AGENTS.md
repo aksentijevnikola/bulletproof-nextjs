@@ -1,36 +1,42 @@
-# bulletproof-nextjs agent contract
+# Repository Guidelines
 
-This Next.js version may differ from training data. Before framework-specific changes, read the relevant guide under `node_modules/next/dist/docs/` or current official documentation.
+## Repository Scope
 
-## Reading order
+- This repository is one standalone Next.js application rooted here.
+- This file applies to the entire repository. Do not create a nested `AGENTS.md` unless a future independent application needs separate rules.
+- Keep changes within the explicit task and preserve unrelated work.
 
-1. `AGENTS.md`
-2. `docs/architecture.md`
-3. `docs/conventions.md`
-4. `docs/testing.md`
-5. Relevant nearby code and tests
+## Canonical Guidance
 
-## Rules
+- `.ai/` is the canonical repository instruction source.
+- Read `.ai/README.md` before any repository work, then load only the topic files it routes for the task.
+- Current configuration and generated contracts describe current repository behavior. Stale prose does not override them.
+- Report contradictions and documentation drift. Do not silently choose between conflicting canonical instructions.
 
-- Use Bun and the repository-pinned versions.
-- Keep route files thin; Server Components are the default.
-- Follow `app -> widgets/features/shared`, `widgets -> features/shared`, `features -> shared`, `shared -> shared/external`.
-- Do not import `src/app` from non-route code or server-only modules from Client Components.
-- Put reusable primitives in `src/shared/ui`, workflows in `src/features`, and page composition in `src/widgets`.
-- Validate environment, form, and response boundaries with Zod.
-- Use native `fetch`; do not add Axios.
-- Use TanStack Query only for interactive client-side server state.
-- Preserve accessibility, visible focus, reduced motion, strict types, Biome, and tests.
-- Do not add backend, auth provider, persistence, PWA, monorepo, or speculative infrastructure.
+## File Selection
+
+- `.ai/README.md` owns topic selection. Do not load every `.ai` file by default.
+
+## Working Protocol
+
+- Follow the scoped protocol in `.ai/README.md` and inspect `git status --short` before editing.
+- Do not weaken architecture, dependency, type, test, security, or accessibility checks.
 - Do not stage or commit unless explicitly requested.
+- Obtain explicit approval before dependency, lockfile, environment, generated-code, or production-build changes.
+
+## Commands
+
+- `.ai/7-tech-stack-tooling-ci.md` owns command classifications and exact tooling facts.
+- Do not run a writing command unless the task and its required approval authorize it.
+
+## Generated Files
+
+- Follow `.ai/7-tech-stack-tooling-ci.md`; do not hand-edit generated or tool-owned state.
 
 ## Verification
 
-Run focused checks while working. Before completion run:
+- Follow `.ai/README.md` and `.ai/7-tech-stack-tooling-ci.md`. Never claim a command passed without current successful output.
 
-```bash
-bun run verify
-bun run e2e
-```
+## Completion Report
 
-Never claim checks passed unless current output confirms it.
+- Report changed files, verification outcomes, unresolved decisions, failures, and limitations.
