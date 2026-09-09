@@ -1,4 +1,4 @@
-import { clientEnvSchema } from "@/shared/env/env.schema";
+import { clientEnvSchema } from "./env.schema";
 
 export const clientEnv = clientEnvSchema.parse({
   NEXT_PUBLIC_APP_NAME: process.env["NEXT_PUBLIC_APP_NAME"],

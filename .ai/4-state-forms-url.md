@@ -38,14 +38,14 @@ Application persistence
 - Derive values during render instead of storing duplicate state.
 - Use event handlers for user-triggered transitions.
 - Use scoped Context only when multiple descendants need one subtree-owned workflow value.
-- `CONFIRMED`: current providers own query state, theme, and notifications; do not turn them into general application stores.
+- `CONFIRMED`: `_app/providers` owns query state, theme, and notifications; do not turn those providers into general application stores.
 - `NOT PRESENT`: no Redux, Zustand, Jotai, Recoil, or equivalent global client-state library exists.
 
 ## Remote State
 
 - Use Server Components for server-owned data that does not require client cache behavior.
 - Use TanStack Query for interactive remote state.
-- Keep request parsing and validation in the API/query boundary, not in a global client store.
+- Keep request parsing and validation in the owning page API/query boundary, not in a global client store.
 - Do not copy query data into global client state unless a documented lifecycle requirement makes the query cache the wrong owner.
 - Follow `3-api-server-actions-contracts.md` for query and mutation behavior.
 
@@ -53,13 +53,13 @@ Application persistence
 
 - Use path segments for resource identity and navigation.
 - Use search parameters for shareable filters, sorting, pagination, and view state when those capabilities are introduced.
-- Parse URL values at the route or feature boundary and validate values before use.
+- Parse URL values at the route or owning page-slice boundary and validate values before use.
 - Update URL state through established Next.js navigation APIs for the installed version.
 - `NOT PRESENT`: no active search-parameter state or URL-state helper library exists. Inspect official installed-version guidance before creating the first pattern.
 
 ## Forms
 
-- `CONFIRMED`: active forms use native `<form>` elements, `FormData`, React local state, and feature-local Zod schemas.
+- `CONFIRMED`: active forms use native `<form>` elements, `FormData`, React local state, and page-local Zod schemas.
 - `NOT PRESENT`: no dedicated form-state library is installed or established.
 - Keep native labels, names, input types, autocomplete attributes, and submit semantics.
 - Use `safeParse` for recoverable validation.

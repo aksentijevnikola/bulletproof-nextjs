@@ -2,7 +2,7 @@
 
 ## Foundations
 
-- `CONFIRMED`: global styles enter through `src/app/globals.css` and `src/shared/styles/bulletproof-nextjs.css`.
+- `CONFIRMED`: root `app/layout.tsx` imports `src/_app/styles/globals.css`, which includes `src/shared/styles/bulletproof-nextjs.css`.
 - Use semantic CSS variables mapped into Tailwind theme tokens.
 - Use semantic utilities such as `bg-background`, `text-foreground`, `border-border`, and their existing role-specific variants.
 - Preserve the current font variables, radius scale, light theme, and dark theme.
@@ -23,7 +23,7 @@
 - Reuse the configured shadcn-compatible and Radix primitives before creating an equivalent control.
 - Use the existing `cn` merge helper for conditional classes.
 - Use the established variant utility when a primitive has named visual or size variants.
-- Keep product language and workflow behavior in features or widgets, not shared primitives.
+- Keep product language and page-owned workflow behavior in `src/_pages`; keep route-wide application composition in `src/_app/layouts`, not Shared primitives.
 - Use the established icon library. Hide decorative icons and give icon-only controls accessible names.
 
 ## Responsive Layout

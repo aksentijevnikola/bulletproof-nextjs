@@ -3,62 +3,67 @@
 ## Application Shape
 
 - `CONFIRMED`: the repository root contains one standalone Next.js application.
-- `CONFIRMED`: routing uses `src/app`; no Pages Router exists.
+- `CONFIRMED`: routing uses the root `app/` directory; no Pages Router exists.
 - `CONFIRMED`: this is not a workspace, monorepo, backend, or package collection.
+- `CONFIRMED`: source ownership follows Feature-Sliced Design v2.1 with framework-required layer names `_app` and `_pages`.
 
 ## Directory Ownership
 
-- `src/app` owns routes, layouts, metadata, route groups, and route states. Keep route files as thin composition adapters.
-- `src/widgets` owns page-level and application-shell composition.
-- `src/features/<feature>` owns a user workflow and its feature-specific schema, state, UI, and tests.
+- Root `app/` owns Next.js route adapters, framework layouts, metadata, route groups, route states, and other framework-required entry files. Keep route files thin.
+- `src/_app` is the FSD App layer. Its `layouts`, `providers`, `styles`, and `lib` segments own route-wide composition and application initialization. It contains segments, not slices.
+- `src/_pages/<page>` owns one page slice and its page-specific UI, model, request/query definitions, and tests. Each page slice exposes its route-consumed surface through `index.ts`.
 - `src/shared/ui` owns business-agnostic UI primitives.
-- Other `src/shared` directories own reusable API, environment, provider, hook, style, notification, and utility infrastructure.
+- Other `src/shared` segments own reusable API, environment, hook, route, style, and utility infrastructure. Each cross-boundary Shared consumer uses the segment `index.ts` public API.
 - `src/test` owns shared test rendering, setup, and network mocks.
 - `public` owns static assets and the demo activity fixture.
 - `scripts` owns repository checks and E2E orchestration.
 - `e2e` owns Playwright specifications.
-- `src/components` and `src/lib` have no active ownership. Place new code in an established layer instead of reviving an unused path implicitly.
+- `src/features`, `src/entities`, `src/widgets`, `src/components`, and top-level `src/lib` have no active ownership. Do not revive a layer or path until a concrete responsibility justifies an approved architecture change.
 
 ## Dependency Boundaries
 
 Active source follows this direction:
 
 ```text
-app      -> widgets, features, shared
-widgets  -> features, shared
-features -> shared
+root app -> _app, _pages, shared
+_app     -> _pages, shared
+_pages   -> shared
 shared   -> shared
 ```
 
-- `scripts/check-architecture.ts` prevents every non-`app` layer from importing `src/app`.
-- The checker prevents `shared` from importing any other layer.
-- The checker prevents a feature from importing a sibling feature or any widget.
-- The checker prevents a widget from importing a sibling widget.
+- Root route adapters may import `_app`, `_pages`, and Shared public APIs as framework composition requires.
+- The local checker prevents target FSD layers from importing legacy `src/app`, `src/features`, or `src/widgets` modules and retains the legacy rule that only route code may import `src/app`.
+- The checker prevents Shared from importing `_app` or `_pages`.
+- The checker prevents a page slice from importing a sibling page slice.
+- Cross-boundary imports use the destination page-slice or Shared-segment public API. Files inside one slice or segment may use relative imports for their own internals.
+- Canonical ownership does not permit legacy `app`, `features`, or `widgets` directories under `src/`; the checker rejects imports that would keep those legacy dependencies alive.
 - The checker prevents a Client Component from importing `server-only`, a `/server/` path, or a `.server` module.
-- Test files and `src/test` are classified as `other`: feature, widget, and shared restrictions do not apply, but the `app` and client-server restrictions still do.
-- The checker does not assign active responsibilities to `src/components`, `src/lib`, or another unrecognized top-level directory. Do not use an unrecognized directory to bypass the documented direction.
+- Test files and `src/test` are classified as `other`: layer and page-slice restrictions do not apply, but legacy-App and client-server restrictions still do.
+- The checker does not assign active responsibilities to unrecognized top-level source directories. Do not use one to bypass the documented direction.
+- `bun run fsd:check` runs the `steiger` architecture linter with `@feature-sliced/steiger-plugin`; the local checker remains authoritative for repository-specific framework names and boundaries.
 - Move shared behavior downward or compose independent modules from a higher layer. Do not bypass the checker.
 
-## Routes and Features
+## Routes and Pages
 
 - Keep route `page.tsx` and `layout.tsx` files focused on metadata, route composition, and server boundaries.
-- Reuse a feature for a user workflow and a widget for page or shell composition.
-- Do not create `src/entities`, `src/server`, another application, or another package until a concrete responsibility requires it.
+- Keep a workflow, schema, request, and composition in its owning page slice while it has one page consumer.
+- Move repeated business responsibility into `features` or `entities` only after reuse establishes that layer's ownership; use `_app/layouts` for route-wide application composition.
+- Do not create `src/server`, another application, or another package until a concrete responsibility requires it.
 - Do not invent backend, authentication, persistence, or deployment layers.
 
 ## Imports and Names
 
 - Use `@/` for imports across directories; it maps to `src/`.
-- Use relative imports only for tightly coupled files in the same directory.
+- Use relative imports for internals inside the same slice or segment. Use public APIs across slice or segment boundaries.
 - Use `import type` for type-only imports.
 - `INFERRED`: active files use kebab-case filenames, PascalCase components and exported types, camelCase values and functions, and `use` prefixes for hooks.
 - Name tests `*.test.ts` or `*.test.tsx`; active tests use `test`.
-- Prefer focused direct imports. The repository has no universal barrel-export requirement; `src/test/test-utils.tsx` intentionally re-exports test helpers.
+- Prefer focused exports. Page slices and Shared segments require boundary public APIs; there is no top-level `src/shared/index.ts`. `src/test/test-utils.tsx` intentionally re-exports test helpers.
 
 ## Module APIs
 
 - Export the smallest surface needed by current consumers.
-- Keep feature internals inside their feature unless repeated cross-feature use proves shared ownership.
+- Keep page-slice internals inside the slice unless repeated cross-page use proves lower-layer ownership.
 - Do not add a barrel solely to shorten imports or hide an architecture boundary.
 - Preserve discriminated public results such as the shared API result rather than leaking transport details.
 

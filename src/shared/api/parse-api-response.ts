@@ -1,6 +1,6 @@
 import type { z } from "zod";
-import { createApiError } from "@/shared/api/api-error";
-import type { ApiResult } from "@/shared/api/api-result";
+import { createApiError } from "./api-error";
+import type { ApiResult } from "./api-result";
 
 function isJsonResponse(response: Response) {
   return (

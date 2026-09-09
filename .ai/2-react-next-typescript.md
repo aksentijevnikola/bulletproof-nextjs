@@ -2,8 +2,9 @@
 
 ## Routing and Rendering
 
-- `CONFIRMED`: the App Router lives in `src/app` and includes a `(shell)` route group.
-- `CONFIRMED`: root and shell layouts compose providers and widgets; route pages remain thin.
+- `CONFIRMED`: the App Router lives in root `app/` and includes a `(shell)` route group.
+- `CONFIRMED`: `app/layout.tsx` composes `_app` providers and global styles; `app/(shell)/layout.tsx` composes the `_app/layouts` application shell.
+- Route pages remain thin Server Component adapters and import the matching `src/_pages/<slice>` public API.
 - Use Server Components by default.
 - Add `"use client"` only for hooks, events, browser APIs, providers, interactive forms, themes, or client queries.
 - Keep Client Components low in the tree and pass only serializable props across the server-client boundary.
@@ -56,7 +57,7 @@ Component reset
 
 - Represent pending, error, empty, and success states explicitly when data is remote.
 - Let route error boundaries own unexpected render failures.
-- Keep recoverable query errors inside the feature with a clear retry action.
+- Keep recoverable query errors inside the owning page slice with a clear retry action.
 - Report unexpected asynchronous failures through the configured query or mutation cache callback.
 - Never expose stack traces, secrets, private URLs, or raw response bodies in UI errors.
 

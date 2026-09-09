@@ -49,6 +49,9 @@ jobs:
       - name: Verify architecture
         run: bun run architecture:check
 
+      - name: Verify Feature-Sliced Design
+        run: bun run fsd:check
+
       - name: Verify dependencies
         run: bun run dependencies:check
 

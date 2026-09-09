@@ -2,8 +2,8 @@
 
 import { LaptopIcon, MoonIcon, SunIcon } from "lucide-react";
 import { useTheme } from "next-themes";
-import { useHasMounted } from "@/shared/hooks/use-has-mounted";
-import { Button } from "@/shared/ui/button";
+import { useHasMounted } from "@/shared/hooks";
+import { Button } from "./button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,8 +12,8 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
-} from "@/shared/ui/dropdown-menu";
-import { Skeleton } from "@/shared/ui/skeleton";
+} from "./dropdown-menu";
+import { Skeleton } from "./skeleton";
 
 const THEME_LABELS = {
   light: "Light",

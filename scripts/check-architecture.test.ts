@@ -12,6 +12,87 @@ function sourceFile(relativePath: string, source: string): SourceFile {
 }
 
 describe("analyzeArchitecture", () => {
+  test("allows the target FSD dependency direction through public APIs", () => {
+    const violations = analyzeArchitecture(
+      [
+        sourceFile("_app/ui/app-shell.tsx", 'import "@/_pages/dashboard";'),
+        sourceFile(
+          "_pages/dashboard/ui/dashboard-page.tsx",
+          'import "@/shared/ui";',
+        ),
+      ],
+      sourceRoot,
+    );
+
+    expect(violations).toEqual([]);
+  });
+
+  test("rejects upward imports from pages", () => {
+    const violations = analyzeArchitecture(
+      [
+        sourceFile(
+          "_pages/dashboard/ui/dashboard-page.tsx",
+          'import "@/_app/providers";',
+        ),
+      ],
+      sourceRoot,
+    );
+
+    expect(violations[0]?.rule).toBe("Pages cannot import from the app layer.");
+  });
+
+  test("rejects sibling page imports", () => {
+    const violations = analyzeArchitecture(
+      [
+        sourceFile(
+          "_pages/dashboard/ui/dashboard-page.tsx",
+          'import "@/_pages/settings";',
+        ),
+      ],
+      sourceRoot,
+    );
+
+    expect(violations[0]?.rule).toBe(
+      "Pages cannot import sibling page slices.",
+    );
+  });
+
+  test("rejects bypasses of page and shared public APIs", () => {
+    const violations = analyzeArchitecture(
+      [
+        sourceFile("_app/ui/app-shell.tsx", 'import "@/_pages/dashboard/ui";'),
+        sourceFile(
+          "_pages/dashboard/ui/dashboard-page.tsx",
+          'import "@/shared/ui/button";',
+        ),
+      ],
+      sourceRoot,
+    );
+
+    expect(violations.map((violation) => violation.rule)).toEqual([
+      "Cross-slice imports must use a page slice public API.",
+      "Cross-segment imports must use a shared segment public API.",
+    ]);
+  });
+
+  test("rejects legacy layers from target FSD layers during migration", () => {
+    const violations = analyzeArchitecture(
+      [
+        sourceFile("_app/ui/app-shell.tsx", 'import "@/widgets/app-shell";'),
+        sourceFile(
+          "_pages/dashboard/ui/dashboard-page.tsx",
+          'import "@/features/activity";',
+        ),
+      ],
+      sourceRoot,
+    );
+
+    expect(violations.map((violation) => violation.rule)).toEqual([
+      "Target FSD layers cannot import from legacy layers.",
+      "Target FSD layers cannot import from legacy layers.",
+    ]);
+  });
+
   test("allows the documented dependency direction", () => {
     const violations = analyzeArchitecture(
       [

@@ -2,7 +2,7 @@
 
 ## Current Boundary
 
-- `CONFIRMED`: `src/shared/api/fetch-client.ts` is the shared HTTP boundary and uses native `fetch`.
+- `CONFIRMED`: `src/shared/api/fetch-client.ts` is the Shared HTTP boundary and uses native `fetch`; cross-boundary consumers import it from `@/shared/api`.
 - Return expected request outcomes as `ApiResult<T>` with the normalized `ApiError` model.
 - Keep untrusted payloads as `unknown` until narrowed or validated.
 - Supply a Zod output schema when the caller requires a trusted response shape.
@@ -23,7 +23,7 @@
 
 ## Data Fetching
 
-- `CONFIRMED`: the active remote-data example is a Client Component query over `public/demo/activity.json`.
+- `CONFIRMED`: the dashboard page slice owns the active Client Component query over `public/demo/activity.json`.
 - Use Server Components for ordinary server-owned data when a server data source is introduced.
 - Use TanStack Query when client interaction requires caching, retry, refetch, or mutation state.
 - Do not fetch an internal Route Handler from a Server Component unless an interoperability boundary requires HTTP.
@@ -31,10 +31,11 @@
 
 ## TanStack Query
 
-- Keep stable readonly query keys near their feature; add a key factory only when reuse proves necessary.
-- Query functions return validated data or throw an `Error` suitable for the feature boundary.
-- The shared QueryClient sets common defaults and cache-level error reporting.
-- The shared helper creates a fresh client on the server and reuses one in the browser; the mounted provider keeps one stable client per provider tree.
+- Keep query definitions with their lowest owning FSD slice. The dashboard activity request and its hierarchical readonly `activityQueries` factory live in `src/_pages/dashboard/api` because they have one page consumer.
+- Build reusable definitions with `queryOptions`; pass the query function's `AbortSignal` through the Shared fetch boundary.
+- Query functions return validated data or throw a UI-safe `Error` suitable for the owning page boundary.
+- `src/_app/lib/query-client.ts` owns QueryClient construction, common defaults, cache-level error reporting, and the fresh-server/stable-browser helper.
+- `src/_app/providers/query-provider.tsx` owns `QueryClientProvider`, mounts one stable client per provider tree, and exposes development tools only in development. Tests create fresh clients.
 - Override retry, freshness, or refetch behavior only for a product requirement.
 - Render pending, error, empty, and success states. Keep retry controls accessible.
 - `NOT PRESENT`: no pagination or dependent-query pattern is established.

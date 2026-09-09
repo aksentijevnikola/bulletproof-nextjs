@@ -39,25 +39,25 @@ Both variables are public. Never store secrets in a `NEXT_PUBLIC_` variable. Whe
 The project is one standalone application. It is not a workspace, monorepo, backend, or PWA.
 
 ```text
-src/app       routes, layouts, metadata, and route states
-src/widgets   page and application-shell composition
-src/features  user workflows
-src/shared    reusable infrastructure and UI primitives
-src/test      test setup, MSW handlers, and render helpers
+app/          thin Next.js App Router adapters and route lifecycle files
+src/_app/     providers, layouts, styles, and application initialization
+src/_pages/   page slices with page-owned UI, models, and requests
+src/shared/   reusable infrastructure and business-agnostic UI primitives
+src/test/     test setup, MSW handlers, and render helpers
 ```
 
 Dependencies flow downward:
 
 ```text
-app       -> widgets, features, shared
-widgets   -> features, shared
-features  -> shared
-shared    -> shared or external packages
+app adapters -> _app, _pages, shared
+_app        -> _pages, shared
+_pages      -> shared
+shared      -> shared or external packages
 ```
 
-Route files stay thin. Server Components are the default, and Client Components are limited to interactive leaves. `scripts/check-architecture.ts` rejects reverse dependencies, sibling feature or widget imports, non-route imports from `app`, and client imports of server-only modules.
+Route files stay thin and import the public API of the matching page or application segment. Each page slice exposes a public `index.ts`; Shared exposes public APIs per segment rather than one top-level barrel. Server Components are the default, and Client Components are limited to interactive leaves.
 
-Create `src/entities` only when real domain nouns have reusable behavior. Create `src/server` only when frontend-owned server execution has a concrete responsibility.
+`scripts/check-architecture.ts` enforces the repository-specific `_app -> _pages -> shared` direction, page-slice isolation, public APIs, legacy-layer imports, and client/server boundaries. `bun run fsd:check` runs Steiger with the Feature-Sliced rules plugin. Do not add `features`, `entities`, `widgets`, or a server layer until a concrete reusable responsibility requires one.
 
 ## Data and state
 
@@ -67,11 +67,11 @@ Create `src/entities` only when real domain nouns have reusable behavior. Create
 - Local state owns local UI behavior.
 - Context is reserved for low-frequency cross-cutting UI concerns such as theme.
 
-The shared API boundary uses native `fetch`, returns a discriminated `ApiResult<T>`, validates external responses with Zod, applies cancellation and timeouts, and converts failures into UI-safe errors. Raw external payloads remain `unknown` until validated.
+The Shared API boundary uses native `fetch`, returns a discriminated `ApiResult<T>`, validates external responses with Zod, applies cancellation and timeouts, and converts failures into UI-safe errors. Raw external payloads remain `unknown` until validated. The dashboard slice owns its activity request and `queryOptions` factory because no other page consumes them; `_app` owns QueryClient construction and the provider tree.
 
 ## UI and accessibility
 
-Reusable primitives live in `src/shared/ui`. Product workflows live in `src/features`, page composition lives in `src/widgets`, and route adapters live in `src/app`.
+Reusable primitives live in `src/shared/ui`. Page-owned workflows and composition live in the matching `src/_pages/<slice>`. Route-wide composition lives in `src/_app/layouts`, providers in `src/_app/providers`, global styles and fonts in `src/_app/styles`, and framework adapters in root `app/`.
 
 The interface uses semantic Tailwind tokens backed by CSS variables. Layouts are mobile-first. Interactive controls require accessible names, keyboard operation, visible focus, and adequate contrast. Forms provide visible labels, inline errors, linked error summaries, `aria-invalid`, descriptive relationships, and focus on the first invalid field. Motion must respect reduced-motion preferences.
 
@@ -80,13 +80,14 @@ The interface uses semantic Tailwind tokens backed by CSS variables. Layouts are
 ```bash
 bun run test
 bun run test:coverage
+bun run fsd:check
 bun run verify
 bun run e2e
 ```
 
 Vitest uses jsdom, React Testing Library, user-event, jest-dom, MSW, and a fresh QueryClient per render. Tests focus on behavior and mock external boundaries rather than internal components.
 
-`bun run verify` checks environment validation, architecture, dependency policy, TypeScript, Biome, unit tests, and the production build. Playwright runs separately against the production application and checks desktop and mobile layouts, keyboard behavior, focus, themes, reduced motion, console errors, hydration warnings, overflow, and axe violations.
+`bun run verify` checks environment validation, the local architecture contract, FSD rules through Steiger, dependency policy, TypeScript, Biome, unit tests, and the production build. Playwright runs separately against the production application and checks desktop and mobile layouts, keyboard behavior, focus, themes, reduced motion, console errors, hydration warnings, overflow, and axe violations.
 
 CI uses frozen installs, least-privilege permissions, pinned action revisions, concurrency cancellation, separate verification and browser-test jobs, and failure artifacts for Playwright.
 

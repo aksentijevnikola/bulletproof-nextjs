@@ -1,0 +1,1 @@
+export { rootFontClassName } from "./fonts";

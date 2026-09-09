@@ -2,7 +2,17 @@ import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-type Layer = "app" | "features" | "shared" | "widgets" | "other";
+type Layer =
+  | "_app"
+  | "_pages"
+  | "app"
+  | "features"
+  | "shared"
+  | "widgets"
+  | "other";
+
+const legacyLayers = new Set<Layer>(["app", "features", "widgets"]);
+const targetLayers = new Set<Layer>(["_app", "_pages"]);
 
 export type ArchitectureViolation = {
   file: string;
@@ -33,15 +43,36 @@ function getLayer(filePath: string, sourceRoot: string): Layer {
   const [topLevelDirectory] = relativePath.split("/");
 
   if (
-    topLevelDirectory === "app" ||
-    topLevelDirectory === "features" ||
-    topLevelDirectory === "shared" ||
-    topLevelDirectory === "widgets"
+    topLevelDirectory === "_app" ||
+    topLevelDirectory === "_pages" ||
+    legacyLayers.has(topLevelDirectory as Layer) ||
+    topLevelDirectory === "shared"
   ) {
-    return topLevelDirectory;
+    return topLevelDirectory as Layer;
   }
 
   return "other";
+}
+
+function isPublicApiImport(
+  importedPath: string,
+  sourceFilePath: string,
+  sourceRoot: string,
+  targetLayer: Layer,
+) {
+  const resolvedPath = resolveInternalImport(
+    importedPath,
+    sourceFilePath,
+    sourceRoot,
+  );
+  if (!resolvedPath) {
+    return false;
+  }
+
+  const relativePath = normalizePath(path.relative(sourceRoot, resolvedPath));
+  const pathParts = relativePath.split("/");
+
+  return pathParts[0] === targetLayer && pathParts.length === 2;
 }
 
 function getModuleScope(filePath: string, sourceRoot: string) {
@@ -136,6 +167,60 @@ export function analyzeArchitecture(
 
       const targetLayer = getLayer(resolvedPath, sourceRoot);
       const targetScope = getModuleScope(resolvedPath, sourceRoot);
+
+      if (targetLayers.has(sourceLayer) && legacyLayers.has(targetLayer)) {
+        violations.push({
+          file: file.filePath,
+          importedPath,
+          rule: "Target FSD layers cannot import from legacy layers.",
+        });
+      }
+
+      if (sourceLayer === "_pages" && targetLayer === "_app") {
+        violations.push({
+          file: file.filePath,
+          importedPath,
+          rule: "Pages cannot import from the app layer.",
+        });
+      }
+
+      if (
+        sourceLayer === "_pages" &&
+        targetLayer === "_pages" &&
+        sourceScope !== targetScope
+      ) {
+        violations.push({
+          file: file.filePath,
+          importedPath,
+          rule: "Pages cannot import sibling page slices.",
+        });
+      }
+
+      if (
+        targetLayer === "_pages" &&
+        targetLayers.has(sourceLayer) &&
+        sourceScope !== targetScope &&
+        !isPublicApiImport(importedPath, file.filePath, sourceRoot, "_pages")
+      ) {
+        violations.push({
+          file: file.filePath,
+          importedPath,
+          rule: "Cross-slice imports must use a page slice public API.",
+        });
+      }
+
+      if (
+        targetLayer === "shared" &&
+        targetLayers.has(sourceLayer) &&
+        !(sourceLayer === "shared" && sourceScope === targetScope) &&
+        !isPublicApiImport(importedPath, file.filePath, sourceRoot, "shared")
+      ) {
+        violations.push({
+          file: file.filePath,
+          importedPath,
+          rule: "Cross-segment imports must use a shared segment public API.",
+        });
+      }
 
       if (sourceLayer !== "app" && targetLayer === "app") {
         violations.push({

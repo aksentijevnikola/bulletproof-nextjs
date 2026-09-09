@@ -1,6 +1,6 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { clientEnvSchema } from "../src/shared/env/env.schema";
+import { clientEnvSchema } from "../src/shared/env";
 
 export function validateEnvironment(
   environment: Partial<Record<string, string | undefined>>,

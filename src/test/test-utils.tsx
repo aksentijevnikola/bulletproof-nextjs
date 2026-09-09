@@ -5,8 +5,8 @@ import {
   render,
 } from "@testing-library/react";
 import type { ReactElement, ReactNode } from "react";
-import { createQueryClient } from "@/shared/lib/query-client";
-import { ThemeProvider } from "@/shared/providers/theme-provider";
+import { createQueryClient } from "@/_app/lib";
+import { ThemeProvider } from "@/_app/providers";
 
 export function createTestQueryClient() {
   return createQueryClient({

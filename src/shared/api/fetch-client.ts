@@ -1,7 +1,7 @@
-import { createApiError } from "@/shared/api/api-error";
-import type { ApiResult } from "@/shared/api/api-result";
-import { parseApiResponse } from "@/shared/api/parse-api-response";
-import type { FetchClientOptions } from "@/shared/api/request-options";
+import { createApiError } from "./api-error";
+import type { ApiResult } from "./api-result";
+import { parseApiResponse } from "./parse-api-response";
+import type { FetchClientOptions } from "./request-options";
 
 const DEFAULT_TIMEOUT_MS = 10_000;
 

@@ -1,4 +1,4 @@
-import type { ApiError } from "@/shared/api/api-error";
+import type { ApiError } from "./api-error";
 
 export type ApiResult<T> =
   | {
